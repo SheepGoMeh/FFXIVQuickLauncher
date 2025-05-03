@@ -86,6 +86,37 @@ namespace XIVLauncher.Accounts
             }
         }
 
+        [JsonIgnore]
+        public string TotpSecret
+        {
+            get
+            {
+                var credentials = CredentialManager.GetCredentials($"{CREDS_PREFIX_NEW}-{UserName.ToLower()}-TOTP");
+
+                return credentials != null ? credentials.Password : string.Empty;
+            }
+            set
+            {
+                try
+                {
+                    CredentialManager.RemoveCredentials($"{CREDS_PREFIX_NEW}-{UserName.ToLower()}-TOTP");
+                }
+                catch (Win32Exception)
+                {
+                    // ignored
+                }
+
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    CredentialManager.SaveCredentials($"{CREDS_PREFIX_NEW}-{UserName.ToLower()}-TOTP", new NetworkCredential
+                    {
+                        UserName = UserName,
+                        Password = value
+                    });
+                }
+            }
+        }
+
         public bool SavePassword { get; set; }
         public bool UseSteamServiceAccount { get; set; }
         public bool UseOtp { get; set; }

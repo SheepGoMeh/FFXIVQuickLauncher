@@ -24,6 +24,14 @@
     <Window.Resources>
         <system:Double x:Key="BannerCardWidth">544</system:Double>
         <system:Double x:Key="BannerCardHeight">213</system:Double>
+        <Style x:Key="TotpVisibilityStyle" TargetType="Button">
+            <Setter Property="Visibility" Value="Collapsed"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsOtp}" Value="True">
+                    <Setter Property="Visibility" Value="Visible"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -279,7 +287,7 @@
                                             <StackPanel Orientation="Horizontal"
                                                         HorizontalAlignment="Center"
                                                         VerticalAlignment="Bottom"
-                                                        Width="160" Margin="0,0,0,0" DockPanel.Dock="Bottom">
+                                                        Width="200" Margin="0,0,0,0" DockPanel.Dock="Bottom">
                                                 <Button
                                                     Content="{Binding LoginLoc}"
                                                     Command="{Binding Path=StartLoginCommand}"
@@ -373,6 +381,18 @@
                                                     <StackPanel Orientation="Horizontal" Margin="0">
                                                         <materialDesign:PackIcon
                                                             Kind="AccountGroup" />
+                                                    </StackPanel>
+                                                </Button>
+                                                <Button HorizontalAlignment="Left"
+                                                        x:Name="TotpSecretButton" Margin="7 0 0 0"
+                                                        Background="#FF0096DB"
+                                                        BorderBrush="#FF0096DB"
+                                                        ToolTip="{Binding TotpSecretLoc}"
+                                                        Style="{StaticResource TotpVisibilityStyle}"
+                                                        Click="TotpSecretButton_OnClick">
+                                                    <StackPanel Orientation="Horizontal" Margin="0">
+                                                        <materialDesign:PackIcon
+                                                            Kind="AccountLock" />
                                                     </StackPanel>
                                                 </Button>
                                             </StackPanel>

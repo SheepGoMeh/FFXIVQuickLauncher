@@ -13,6 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
 using CheapLoc;
+using OtpNet;
 using Serilog;
 using XIVLauncher.Accounts;
 using XIVLauncher.Common;
@@ -277,14 +278,22 @@ namespace XIVLauncher.Windows.ViewModel
 
             if (isOtp && (!hasValidCache || action == AfterLoginAction.Repair))
             {
-                otp = OtpInputDialog.AskForOtp((otpDialog, result) =>
+                if (AccountManager.CurrentAccount.TotpSecret != string.Empty)
                 {
-                    if (AccountManager.CurrentAccount != null && result != null && AccountManager.CurrentAccount.LastSuccessfulOtp == result)
+                    var totp = new Totp(Base32Encoding.ToBytes(AccountManager.CurrentAccount.TotpSecret));
+                    otp = totp.ComputeTotp();
+                }
+                else
+                {
+                    otp = OtpInputDialog.AskForOtp((otpDialog, result) =>
                     {
-                        otpDialog.IgnoreCurrentResult(Loc.Localize("DuplicateOtpAfterSuccess",
-                                                                   "This OTP has been already used.\nIt may take up to 30 seconds for a new one."));
-                    }
-                }, _window);
+                        if (AccountManager.CurrentAccount != null && result != null && AccountManager.CurrentAccount.LastSuccessfulOtp == result)
+                        {
+                            otpDialog.IgnoreCurrentResult(Loc.Localize("DuplicateOtpAfterSuccess",
+                                                                       "This OTP has been already used.\nIt may take up to 30 seconds for a new one."));
+                        }
+                    }, _window);
+                }
             }
 
             if (otp == null)
@@ -1284,6 +1293,15 @@ namespace XIVLauncher.Windows.ViewModel
             }
         }
 
+        public void AskTotpSecret()
+        {
+            if (AccountManager.CurrentAccount == null)
+                return;
+
+            AccountManager.CurrentAccount.TotpSecret = TotpInputDialog.AskForTotp((totpDialog, result) => { },
+                                                                                  _window);
+        }
+
         private async Task<bool> HandleBootCheck()
         {
             try
@@ -1577,6 +1595,7 @@ namespace XIVLauncher.Windows.ViewModel
         {
             LoginUsernameLoc = Loc.Localize("LoginBoxUsername", "Username");
             LoginPasswordLoc = Loc.Localize("LoginBoxPassword", "Password");
+            TotpSecretLoc = Loc.Localize("LoginBoxTotpSecret", "One-Time-Password Secret");
             AutoLoginLoc = Loc.Localize("LoginBoxAutoLogin", "Log in automatically");
             OtpLoc = Loc.Localize("LoginBoxOtp", "Use One-Time-Passwords");
             SteamLoc = Loc.Localize("LoginBoxSteam", "Use Steam service account");
@@ -1599,6 +1618,7 @@ namespace XIVLauncher.Windows.ViewModel
 
         public string LoginUsernameLoc { get; private set; }
         public string LoginPasswordLoc { get; private set; }
+        public string TotpSecretLoc { get; private set; }
         public string AutoLoginLoc { get; private set; }
         public string OtpLoc { get; private set; }
         public string SteamLoc { get; private set; }

@@ -527,6 +527,11 @@ namespace XIVLauncher.Windows
             switcher.Show();
         }
 
+        private void TotpSecretButton_OnClick(object sender, RoutedEventArgs e)
+        {
+            Model.AskTotpSecret();
+        }
+
         private void OnAccountSwitchedEventHandler(object sender, XivAccount e)
         {
             SwitchAccount(e, true);
